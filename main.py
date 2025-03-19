@@ -1,10 +1,10 @@
 import DBconnect
 from cryptography.fernet import Fernet
 
-# Chemin pour sauvegarder ou récupérer la clé
+
 cle_path = r"D:\main data\Abed work\Cryptage&Decryptage en python\cle.key"
 
-# Sauvegarder ou charger la clé
+
 try:
     # Charger la clé existante
     with open(cle_path, "rb") as fichier_cle:
@@ -20,7 +20,7 @@ except FileNotFoundError:
 # Initialisation de l'objet de cryptage avec la clé chargée
 cryptage = Fernet(cle)
 
-# Connexion à la base de données MySQL (via DBconnect)
+# Connexion à la base de données MySQL
 connexion = DBconnect.connecter_bd()
 curseur = connexion.cursor()
 
