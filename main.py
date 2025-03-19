@@ -1,4 +1,4 @@
-import mysql.connector
+import DBconnect
 from cryptography.fernet import Fernet
 
 # Chemin pour sauvegarder ou récupérer la clé
@@ -20,13 +20,8 @@ except FileNotFoundError:
 # Initialisation de l'objet de cryptage avec la clé chargée
 cryptage = Fernet(cle)
 
-# Connexion à la base de données MySQL
-connexion = mysql.connector.connect(
-    host="localhost",  # Remplace par l'adresse de ton serveur
-    user="root",  # Ton nom d'utilisateur MySQL
-    password="8585Abed8585oK",  # Ton mot de passe MySQL
-    database="crypt_decrypt_python"  # Le nom de ta base de données
-)
+# Connexion à la base de données MySQL (via DBconnect)
+connexion = DBconnect.connecter_bd()
 curseur = connexion.cursor()
 
 # Création de la table si elle n'existe pas
@@ -55,11 +50,7 @@ def afficher_donnees():
         print(f"Nom : {nom}, Message décrypté : {message_decrypte}")
 
 # Exemple d'utilisation
-
-# Inserer une nouvelle donnée (à commenter après insertion initiale)
 #inserer_donnees("Abed", "bonjour tout le monde")
-
-# Afficher les données décryptées
 afficher_donnees()
 
 # Fermer la connexion
