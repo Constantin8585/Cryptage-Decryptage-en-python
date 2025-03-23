@@ -2,7 +2,7 @@ import DBconnect
 from cryptography.fernet import Fernet
 
 # Chemin pour sauvegarder ou récupérer la clé
-cle_path = r"D:\main data\Abed work\Cryptage&Decryptage en python\cle.key"
+cle_path = r"D:\main data\Abed work\Cryptage&Decryptage en python\Keys\cle.key"
 
 # Charger ou générer une clé
 def charger_cle():
