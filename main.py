@@ -1,59 +1,57 @@
 import DBconnect
 from cryptography.fernet import Fernet
 
-
+# Chemin pour sauvegarder ou récupérer la clé
 cle_path = r"D:\main data\Abed work\Cryptage&Decryptage en python\cle.key"
 
+# Charger ou générer une clé
+def charger_cle():
+    try:
+        with open(cle_path, "rb") as fichier_cle:
+            cle = fichier_cle.read()
+        print(f"Clé chargée depuis : {cle_path}")
+    except FileNotFoundError:
+        cle = Fernet.generate_key()
+        with open(cle_path, "wb") as fichier_cle:
+            fichier_cle.write(cle)
+        print(f"Nouvelle clé générée et sauvegardée à : {cle_path}")
+    return cle
 
-try:
-
-    with open(cle_path, "rb") as fichier_cle:
-        cle = fichier_cle.read()
-    print(f"Clé chargée depuis : {cle_path}")
-except FileNotFoundError:
-
-    cle = Fernet.generate_key()
-    with open(cle_path, "wb") as fichier_cle:
-        fichier_cle.write(cle)
-    print(f"Nouvelle clé générée et sauvegardée à : {cle_path}")
-
-# Initialisation de l'objet de cryptage avec la clé chargée
+# Initialisation du cryptage
+cle = charger_cle()
 cryptage = Fernet(cle)
 
-
+# Connexion à la base de données
 connexion = DBconnect.connecter_bd()
 curseur = connexion.cursor()
 
-
+# Création de la table si elle n'existe pas
 curseur.execute("""
 CREATE TABLE IF NOT EXISTS utilisateurs (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(255),
-    message_crypte TEXT
+    nom_utilisateur VARCHAR(255),
+    mot_de_passe TEXT
 )
 """)
 
-
-def inserer_donnees(nom, message):
-    message_crypte = cryptage.encrypt(message.encode())
-    requete = "INSERT INTO utilisateurs (nom, message_crypte) VALUES (%s, %s)"
-    curseur.execute(requete, (nom, message_crypte))
+# Fonction pour insérer un utilisateur
+def inserer_utilisateur(nom_utilisateur, mot_de_passe):
+    mot_de_passe_crypte = cryptage.encrypt(mot_de_passe.encode())
+    requete = "INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe) VALUES (%s, %s)"
+    curseur.execute(requete, (nom_utilisateur, mot_de_passe_crypte))
     connexion.commit()
-    print(f"Données insérées : Nom = {nom}, Message crypté = {message_crypte.decode()}")
+    print(f"Utilisateur inséré : Nom = {nom_utilisateur}, Mot de passe crypté = {mot_de_passe_crypte.decode()}")
 
+# Fonction pour afficher les utilisateurs
+def afficher_utilisateurs():
+    curseur.execute("SELECT nom_utilisateur, mot_de_passe FROM utilisateurs")
+    resultats = curseur.fetchall()
+    utilisateurs = []
+    for nom_utilisateur, mot_de_passe_crypte in resultats:
+        mot_de_passe_decrypte = cryptage.decrypt(mot_de_passe_crypte.encode()).decode()
+        utilisateurs.append(f"Nom d'utilisateur : {nom_utilisateur}, Mot de passe : {mot_de_passe_decrypte}")
+    return utilisateurs
 
-def afficher_donnees():
-    curseur.execute("SELECT nom, message_crypte FROM utilisateurs")
-    for nom, message_crypte in curseur.fetchall():
-        # Décryptage des messages récupérés
-        message_decrypte = cryptage.decrypt(message_crypte.encode()).decode()
-        print(f"Nom : {nom}, Message décrypté : {message_decrypte}")
-
-
-
-#inserer_donnees("Cryptage", "bonjour tout le monde")
-
-afficher_donnees()
-
-
-connexion.close()
+# Fermer la connexion à la base
+def fermer_connexion():
+    connexion.close()
